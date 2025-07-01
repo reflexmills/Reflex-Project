@@ -1,0 +1,400 @@
+import React, { useEffect, useState } from "react";
+
+const SERVICES = [
+  { id: "bot", label: "Создать бота", priceRUB: 5000 },
+  { id: "site", label: "Создать сайт", priceRUB: 3700 },
+  { id: "mini", label: "Создать Mini app", priceRUB: 4200 },
+];
+
+const EXCHANGE_RATE = 90; // Примерный курс рубль->доллар
+
+type Page = "loading" | "landing" | "create" | "service" | "profile" | "help";
+
+export default function ReflexMiniApp() {
+  const [page, setPage] = useState<Page>("loading");
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [buttonsVisible, setButtonsVisible] = useState(false);
+  const [serviceSelected, setServiceSelected] = useState<typeof SERVICES[0] | null>(null);
+  const [topUpOpen, setTopUpOpen] = useState(false);
+  const [topUpMethod, setTopUpMethod] = useState<null | "card" | "crypto">(null);
+  const [topUpAmount, setTopUpAmount] = useState(1000);
+  const [isAdmin, setIsAdmin] = useState(false); // Заменить на реальную логику
+
+  // Имитация загрузки с анимацией
+  if (page === "landing") {
+  return (
+    <div
+      style={{
+        position: "relative",
+        height: "100vh",
+        overflow: "hidden",
+        filter: buttonsVisible ? "blur(4px)" : "none",
+        transition: "filter 0.8s ease"
+      }}
+    >
+      {/* видео-фон */}
+      <video
+        src="reflex_anim.mp4"      // тот же путь, что и index.html
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          zIndex: -1               // отправляем за контент
+        }}
+      />
+
+      {/* контент поверх видео */}
+      <div
+        style={{
+          position: "relative",
+          padding: 20,
+          color: "#fff",
+          textShadow: "0 0 6px black",
+          textAlign: "center",
+          userSelect: "none"
+        }}
+      >
+        <h1
+          style={{
+            opacity: buttonsVisible ? 1 : 0,
+            transition: "opacity 1.5s ease"
+          }}
+        >
+          Reflex is your personal creator
+        </h1>
+
+        <p
+          style={{
+            opacity: buttonsVisible ? 1 : 0,
+            transition: "opacity 1.5s ease 0.5s",
+            fontSize: 14
+          }}
+        >
+          Это приложение создано для&nbsp;помощи в&nbsp;создании ботов,
+          сайтов, mini-apps
+        </p>
+
+        <div
+          style={{
+            marginTop: 50,
+            display: "flex",
+            justifyContent: "center",
+            gap: 20,
+            opacity: buttonsVisible ? 1 : 0,
+            transition: "opacity 1.5s ease 1s"
+          }}
+        >
+          <button onClick={() => { setPage("create");  setButtonsVisible(false); }}>Создать</button>
+          <button onClick={() => { setPage("profile"); setButtonsVisible(false); }}>Профиль</button>
+          <button onClick={() => { setPage("help");    setButtonsVisible(false); }}>Помощь</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+  // Здесь будет следующий блок для страницы "Создать"
+  return <div>Дальше будет...</div>;
+}
+// ...продолжение ReflexMiniApp из прошлого кода
+
+if (page === "create") {
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Выберите услугу</h2>
+      <ul style={{ listStyle: "none", padding: 0 }}>
+        {SERVICES.map((s) => (
+          <li key={s.id} style={{ margin: "10px 0" }}>
+            <button
+              onClick={() => {
+                setServiceSelected(s);
+                setPage("service");
+              }}
+              style={{ width: "100%", padding: "10px" }}
+            >
+              {s.label} — {s.priceRUB}₽ (~$
+              {(s.priceRUB / EXCHANGE_RATE).toFixed(2)})
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button
+        style={{ marginTop: 20 }}
+        onClick={() => {
+          setPage("landing");
+          setButtonsVisible(true);
+        }}
+      >
+        ← Назад
+      </button>
+    </div>
+  );
+}
+
+if (page === "service" && serviceSelected) {
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>{serviceSelected.label}</h2>
+      <p>
+        Вы выбрали <b>{serviceSelected.label}</b>. Опишите задачу ниже:
+      </p>
+      <textarea
+        rows={5}
+        placeholder="Введите описание..."
+        style={{ width: "100%", marginBottom: 15 }}
+      />
+      <p>
+        Цена: {serviceSelected.priceRUB}₽ (~$
+        {(serviceSelected.priceRUB / EXCHANGE_RATE).toFixed(2)})
+      </p>
+      <button
+        onClick={() => alert("Оплата и передача данных администратору (заглушка)")}
+      >
+        Оплатить
+      </button>
+      <br />
+      <button
+        style={{ marginTop: 20 }}
+        onClick={() => setPage("create")}
+      >
+        ← Назад
+      </button>
+    </div>
+  );
+}
+if (page === "profile") {
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Профиль</h2>
+      <p>Баланс: 10000₽</p>
+      <p>Активные заказы: 2</p>
+
+      <button onClick={() => setTopUpOpen(true)}>Пополнить</button>
+
+      {isAdmin && (
+        <>
+          <button
+            onClick={() => alert("Админ раздел: блокировать/разблокировать пользователя")}
+            style={{ marginTop: 10 }}
+          >
+            Админ раздел
+          </button>
+        </>
+      )}
+
+      <button
+        onClick={() => {
+          setPage("landing");
+          setButtonsVisible(true);
+        }}
+        style={{ marginTop: 20 }}
+      >
+        ← Назад
+      </button>
+
+      {/* Модалка пополнения */}
+      {topUpOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.7)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          {!topUpMethod ? (
+            <div
+              style={{
+                background: "#fff",
+                padding: 20,
+                borderRadius: 8,
+                width: 300,
+                textAlign: "center",
+              }}
+            >
+              <h3>Выберите способ оплаты</h3>
+              <button onClick={() => setTopUpMethod("card")} style={{ margin: "10px 0" }}>
+                Картой
+              </button>
+              <button onClick={() => setTopUpMethod("crypto")} style={{ margin: "10px 0" }}>
+                Криптой
+              </button>
+              <br />
+              <button onClick={() => setTopUpOpen(false)}>Отмена</button>
+            </div>
+          ) : topUpMethod === "card" ? (
+            <div
+              style={{
+                background: "#fff",
+                padding: 20,
+                borderRadius: 8,
+                width: 300,
+                textAlign: "center",
+              }}
+            >
+              <h3>Оплата картой</h3>
+              <p>Функция оплаты картой находится в разработке.</p>
+              <button onClick={() => setTopUpMethod(null)}>← Назад</button>
+            </div>
+          ) : (
+            <div
+              style={{
+                background: "#fff",
+                padding: 20,
+                borderRadius: 8,
+                width: 300,
+                textAlign: "center",
+              }}
+            >
+              <h3>Оплата криптой</h3>
+              <input
+                type="number"
+                value={topUpAmount}
+                onChange={(e) => setTopUpAmount(Number(e.target.value))}
+                style={{ width: "100%", marginBottom: 15 }}
+                min={1}
+              />
+              <p>Оплата через CryptoBot (токен вставить в код)</p>
+              <button
+                onClick={() => alert(`Вызов CryptoBot для оплаты ${topUpAmount}₽ (TODO)`)}
+              >
+                Оплатить {topUpAmount}₽
+              </button>
+              <button onClick={() => setTopUpMethod(null)} style={{ marginTop: 10 }}>
+                ← Назад
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+type OrderStatus = "создание" | "успешно" | "отказано";
+
+interface Order {
+  id: number;
+  service: string;
+  description: string;
+  status: OrderStatus;
+}
+
+const sampleOrders: Order[] = [
+  { id: 1, service: "Создать бота", description: "Бот для телеги", status: "создание" },
+  { id: 2, service: "Создать сайт", description: "Лэндинг", status: "успешно" },
+];
+
+// Внутри ReflexMiniApp добавляем логику для заказов и админки
+
+// В useState
+const [orders, setOrders] = useState<Order[]>(sampleOrders);
+const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+const [adminPage, setAdminPage] = useState<"main" | "orders" | "balance" | null>(null);
+
+// В основном render после других if:
+if (page === "profile" && isAdmin && adminPage === "main") {
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Админ раздел</h2>
+      <button onClick={() => setAdminPage("orders")}>Заказы</button>
+      <button onClick={() => setAdminPage("balance")}>Изменить баланс</button>
+      <button onClick={() => setAdminPage(null)}>← Назад</button>
+    </div>
+  );
+}
+
+if (page === "profile" && isAdmin && adminPage === "orders") {
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Управление заказами</h2>
+      {orders.map((order) => (
+        <div
+          key={order.id}
+          style={{
+            border: "1px solid #ccc",
+            marginBottom: 10,
+            padding: 10,
+            cursor: "pointer",
+            background: selectedOrder?.id === order.id ? "#eef" : "white",
+          }}
+          onClick={() => setSelectedOrder(order)}
+        >
+          <b>{order.service}</b> — {order.status}
+        </div>
+      ))}
+      {selectedOrder && (
+        <div style={{ marginTop: 20 }}>
+          <h3>Заказ #{selectedOrder.id}</h3>
+          <p><b>Услуга:</b> {selectedOrder.service}</p>
+          <p><b>Описание:</b> {selectedOrder.description}</p>
+          <p><b>Статус:</b> {selectedOrder.status}</p>
+          <select
+            value={selectedOrder.status}
+            onChange={(e) => {
+              const status = e.target.value as OrderStatus;
+              setOrders((prev) =>
+                prev.map((o) =>
+                  o.id === selectedOrder.id ? { ...o, status } : o
+                )
+              );
+              setSelectedOrder({ ...selectedOrder, status });
+            }}
+          >
+            <option value="создание">создание</option>
+            <option value="успешно">успешно</option>
+            <option value="отказано">отказано</option>
+          </select>
+          <br />
+          <button onClick={() => setSelectedOrder(null)} style={{ marginTop: 10 }}>
+            Закрыть
+          </button>
+        </div>
+      )}
+      <button onClick={() => setAdminPage("main")} style={{ marginTop: 20 }}>
+        ← Назад
+      </button>
+    </div>
+  );
+}
+
+if (page === "profile" && isAdmin && adminPage === "balance") {
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Изменить баланс пользователя</h2>
+      <input type="text" placeholder="Введите ID пользователя" style={{ width: "100%", marginBottom: 10 }} />
+      <input type="number" placeholder="Новая сумма" style={{ width: "100%", marginBottom: 10 }} />
+      <button onClick={() => alert("Баланс изменён (заглушка)")}>Сохранить</button>
+      <button onClick={() => setAdminPage("main")} style={{ marginTop: 20 }}>
+        ← Назад
+      </button>
+    </div>
+  );
+}
+
+// Помощь
+if (page === "help") {
+  return (
+    <div style={{ padding: 20 }}>
+      <h2>Помощь</h2>
+      <p>Это приложение помогает создавать ботов, сайты и мини приложения.</p>
+      <p>Для пополнения баланса используйте кнопку "Пополнить" в профиле.</p>
+      <p>Если возникли проблемы — свяжитесь с поддержкой @yareflex.</p>
+      <button onClick={() => { setPage("landing"); setButtonsVisible(true); }} style={{ marginTop: 20 }}>
+        ← Назад
+      </button>
+    </div>
+  );
+}
+        
